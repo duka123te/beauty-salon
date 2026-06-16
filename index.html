@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Beauty Salon Management</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:14px;background:#f7f7f5;color:#111;padding:0 0 60px;}
+input,select,textarea,button{font-family:inherit;font-size:13px;}
+input,select,textarea{border:1px solid #ddd;border-radius:8px;padding:0 10px;background:#fff;color:#111;width:100%;}
+input:focus,select:focus,textarea:focus{outline:none;border-color:#888;}
+.wrap{max-width:1080px;margin:0 auto;padding:0 20px;}
+
+/* header */
+.pg-header{padding:24px 0 14px;border-bottom:1px solid #e5e5e5;margin-bottom:20px;}
+.pg-header h1{font-size:20px;font-weight:500;display:flex;align-items:center;gap:8px;}
+.pg-header p{font-size:13px;color:#888;margin-top:4px;}
+
+/* toast */
+.toast{position:fixed;bottom:24px;right:24px;background:#111;color:#fff;padding:10px 18px;border-radius:10px;font-size:13px;z-index:9999;opacity:0;transition:opacity .3s;pointer-events:none;}
+.toast.show{opacity:1;}
+.toast.err{background:#C0392B;}
+
+/* loading bar */
+.loading-bar{position:fixed;top:0;left:0;height:3px;background:#1D9E75;z-index:9999;transition:width .3s;width:0;}
+
+/* stats */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px;}
+.stat{background:#efefed;border-radius:10px;padding:12px 16px;}
+.stat-label{font-size:12px;color:#666;margin-bottom:4px;}
+.stat-val{font-size:22px;font-weight:500;}
+
+/* section */
+.sec-title{font-size:15px;font-weight:500;margin-bottom:10px;display:flex;align-items:center;gap:7px;}
+.toolbar{display:flex;gap:10px;margin-bottom:16px;align-items:center;}
+.toolbar input{height:36px;}
+.btn-primary{background:#111;color:#fff;border:none;border-radius:8px;padding:0 16px;height:36px;cursor:pointer;display:flex;align-items:center;gap:6px;white-space:nowrap;}
+.btn-primary:hover{opacity:.85;}
+
+/* cards */
+.card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:12px;margin-bottom:28px;}
+.card{background:#fff;border:1px solid #e5e5e5;border-radius:12px;padding:14px 16px;}
+.card.done{border-left:3px solid #1D9E75;}
+.card.cancelled{border-left:3px solid #E24B4A;opacity:.65;}
+.card.pending{border-left:3px solid #e5e5e5;}
+.card-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+.card-id{display:flex;align-items:center;gap:10px;}
+.avatar{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;flex-shrink:0;}
+.card-name{font-size:14px;font-weight:500;}
+.card-phone{font-size:12px;color:#888;margin-top:2px;}
+.pill{display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:500;}
+.pill-done{background:#E1F5EE;color:#0F6E56;}
+.pill-cancelled{background:#FCEBEB;color:#A32D2D;}
+.pill-pending{background:#efefed;color:#666;}
+.badges{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:10px;}
+.badge{padding:2px 8px;border-radius:20px;font-size:11px;background:#E1F5EE;color:#0F6E56;}
+.card-meta{display:grid;grid-template-columns:1fr 1fr;gap:6px 10px;margin-bottom:10px;}
+.meta-lbl{font-size:11px;color:#999;margin-bottom:2px;}
+.meta-val{font-size:12px;font-weight:500;}
+.meta-price{color:#0F6E56;}
+.card-note{font-size:12px;color:#888;background:#f7f7f5;border-radius:8px;padding:6px 10px;margin-bottom:10px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.card-actions{display:flex;gap:5px;border-top:1px solid #f0f0f0;padding-top:10px;}
+.act{flex:1;display:flex;align-items:center;justify-content:center;gap:4px;height:27px;border-radius:8px;font-size:11px;cursor:pointer;border:1px solid #ddd;background:#fff;color:#666;}
+.act:hover{background:#f5f5f3;}
+.act.adone:hover,.act.is-done{border-color:#1D9E75;color:#1D9E75;background:#E1F5EE;}
+.act.acancel:hover,.act.is-cancel{border-color:#E24B4A;color:#E24B4A;background:#FCEBEB;}
+
+/* divider */
+.divider{height:1px;background:#e5e5e5;margin:4px 0 24px;}
+
+/* filters */
+.fbar{display:grid;grid-template-columns:1fr 1fr 1fr 1fr auto;gap:8px;margin-bottom:8px;align-items:end;}
+.fbar2{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:10px;align-items:end;}
+.fg label{display:block;font-size:12px;color:#888;margin-bottom:4px;}
+.fg input,.fg select{height:34px;}
+.btn-clear{background:#fff;border:1px solid #ddd;border-radius:8px;padding:0 12px;height:34px;cursor:pointer;color:#666;display:flex;align-items:center;gap:4px;}
+.btn-clear:hover{background:#f5f5f3;}
+.fcount{font-size:13px;color:#888;margin-bottom:10px;}
+.fcount strong{color:#111;}
+
+/* table */
+.tbl-wrap{border:1px solid #e5e5e5;border-radius:12px;overflow:hidden;background:#fff;margin-bottom:28px;}
+table{width:100%;border-collapse:collapse;table-layout:fixed;}
+thead{background:#f7f7f5;}
+th{padding:9px 12px;text-align:left;font-size:12px;font-weight:500;color:#888;border-bottom:1px solid #e5e5e5;}
+td{padding:9px 12px;border-bottom:1px solid #f0f0f0;vertical-align:middle;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px;}
+tbody tr:last-child td{border-bottom:none;}
+tbody tr:hover{background:#fafafa;}
+.td-svc{white-space:normal;line-height:1.9;}
+.s2pill{display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border-radius:20px;font-size:11px;}
+.s2-done{background:#E1F5EE;color:#085041;}
+.s2-cancel{background:#FCEBEB;color:#791F1F;}
+.s2-pending{background:#efefed;color:#666;}
+.empty{text-align:center;padding:32px;color:#888;font-size:14px;}
+
+/* modal */
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:200;align-items:center;justify-content:center;}
+.overlay.show{display:flex;}
+.modal{background:#fff;border-radius:14px;padding:24px;width:520px;max-width:95vw;max-height:92vh;overflow-y:auto;}
+.modal h2{font-size:16px;font-weight:600;margin-bottom:18px;}
+.frow{margin-bottom:14px;}
+.frow>label{display:block;font-size:13px;color:#555;margin-bottom:5px;}
+.frow input,.frow select,.frow textarea{height:36px;}
+.frow textarea{height:64px;padding:8px 10px;resize:vertical;}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.req{color:#E24B4A;}
+.hint{font-size:12px;color:#888;font-weight:400;}
+.err-msg{font-size:12px;color:#E24B4A;margin-top:4px;display:none;}
+.warn-box{font-size:12px;color:#92580A;background:#FEF3C7;border:1px solid #F59E0B;padding:7px 10px;border-radius:8px;margin-top:5px;display:none;}
+.mfooter{display:flex;gap:10px;justify-content:flex-end;margin-top:18px;}
+.mfooter button{padding:0 20px;height:36px;border-radius:8px;font-size:14px;cursor:pointer;}
+.btn-sec{background:#fff;border:1px solid #ddd;color:#111;}
+.btn-prim{background:#111;color:#fff;border:none;}
+.btn-prim:hover{opacity:.85;}
+
+/* service section */
+.svc-section-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
+.btn-manage{background:#fff;border:1px solid #ddd;border-radius:8px;padding:0 10px;height:28px;font-size:12px;cursor:pointer;display:flex;align-items:center;gap:4px;color:#555;}
+.btn-manage:hover{background:#f5f5f3;}
+.svc-add-grid{display:grid;grid-template-columns:1fr 110px 64px;gap:7px;align-items:center;margin-bottom:8px;}
+.svc-add-grid input,.svc-add-grid select{height:34px;}
+.btn-addsvc{height:34px;background:#111;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:13px;white-space:nowrap;}
+.btn-addsvc:hover{opacity:.85;}
+.svc-list{border:1px solid #e5e5e5;border-radius:8px;overflow:hidden;}
+.svc-item{display:flex;align-items:center;padding:8px 12px;border-bottom:1px solid #f0f0f0;gap:10px;}
+.svc-item:last-child{border-bottom:none;}
+.svc-item-name{flex:1;font-size:13px;}
+.svc-item-price{font-size:13px;font-weight:500;color:#0F6E56;min-width:72px;text-align:right;}
+.svc-item-del{background:none;border:none;cursor:pointer;color:#ccc;font-size:15px;padding:2px 4px;border-radius:4px;line-height:1;}
+.svc-item-del:hover{color:#E24B4A;background:#FCEBEB;}
+.svc-empty{padding:14px;text-align:center;font-size:13px;color:#aaa;}
+.svc-total-row{display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:#f7f7f5;border-radius:8px;margin-top:7px;font-size:13px;}
+.svc-total-row strong{color:#0F6E56;}
+.rm-prefix{position:relative;}
+.rm-prefix input{padding-left:30px;}
+.rm-prefix::before{content:'RM';position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:12px;color:#aaa;pointer-events:none;z-index:1;}
+
+/* catalog modal */
+.cat-modal{width:440px;}
+.cat-list{border:1px solid #e5e5e5;border-radius:8px;overflow:hidden;max-height:260px;overflow-y:auto;margin-bottom:14px;}
+.cat-row{display:flex;align-items:center;padding:9px 12px;border-bottom:1px solid #f0f0f0;gap:8px;}
+.cat-row:last-child{border-bottom:none;}
+.cat-row-name{flex:1;font-size:13px;}
+.cat-price-inp{width:80px;height:28px;font-size:12px;text-align:right;border:1px solid #ddd;border-radius:6px;padding:0 6px;}
+.cat-del{background:none;border:none;cursor:pointer;color:#ccc;font-size:15px;line-height:1;padding:2px 4px;border-radius:4px;}
+.cat-del:hover{color:#E24B4A;background:#FCEBEB;}
+.cat-add{display:grid;grid-template-columns:1fr 90px auto;gap:7px;align-items:center;margin-top:4px;}
+.cat-add input{height:32px;font-size:13px;}
+.cat-add button{height:32px;background:#111;color:#fff;border:none;border-radius:8px;cursor:pointer;padding:0 14px;font-size:13px;}
+
+@media(max-width:640px){
+  .stats{grid-template-columns:1fr 1fr;}
+  .fbar{grid-template-columns:1fr 1fr;}
+  .fbar2{grid-template-columns:1fr 1fr;}
+  .two{grid-template-columns:1fr;}
+  .svc-add-grid{grid-template-columns:1fr 90px 58px;}
+}
+</style>
+</head>
+<body>
+<div class="loading-bar" id="lbar"></div>
+<div class="toast" id="toast"></div>
+
+<div class="wrap">
+  <div class="pg-header">
+    <h1><i class="ti ti-sparkles"></i>Beauty Salon Management</h1>
+    <p>All data synced across devices in real time</p>
+  </div>
+
+  <div class="stats">
+    <div class="stat"><div class="stat-label">Total customers</div><div class="stat-val" id="st-cust">—</div></div>
+    <div class="stat"><div class="stat-label">This month</div><div class="stat-val" id="st-month">—</div></div>
+    <div class="stat"><div class="stat-label">Completed</div><div class="stat-val" id="st-done">—</div></div>
+    <div class="stat"><div class="stat-label">Revenue (RM)</div><div class="stat-val" id="st-rev">—</div></div>
+  </div>
+
+  <div class="sec-title"><i class="ti ti-users"></i>Section 1 — Customer list</div>
+  <div class="toolbar">
+    <input type="text" id="s1-search" placeholder="Search by name or phone..." oninput="renderS1()">
+    <button class="btn-primary" onclick="openForm(null)"><i class="ti ti-plus"></i>Add customer</button>
+  </div>
+  <div id="card-grid" class="card-grid"></div>
+  <div id="s1-empty" class="empty" style="display:none">No records yet. Click "Add customer" to get started.</div>
+
+  <div class="divider"></div>
+
+  <div class="sec-title"><i class="ti ti-history"></i>Section 2 — Appointment records</div>
+  <div class="fbar">
+    <div class="fg"><label>Search name / notes</label><input type="text" id="f-q" placeholder="Keyword..." oninput="renderS2()"></div>
+    <div class="fg"><label>Phone</label><select id="f-ph" onchange="renderS2()"><option value="">All customers</option></select></div>
+    <div class="fg"><label>Service</label><select id="f-sv" onchange="renderS2()"><option value="">All services</option></select></div>
+    <div class="fg"><label>Status</label><select id="f-st" onchange="renderS2()"><option value="">All</option><option value="pending">Pending</option><option value="done">Completed</option><option value="cancelled">Cancelled</option></select></div>
+    <button class="btn-clear" onclick="clearF()"><i class="ti ti-x"></i>Clear</button>
+  </div>
+  <div class="fbar2">
+    <div class="fg"><label>From</label><input type="datetime-local" id="f-from" onchange="renderS2()"></div>
+    <div class="fg"><label>To</label><input type="datetime-local" id="f-to" onchange="renderS2()"></div>
+    <div></div>
+  </div>
+  <div class="fcount" id="fcount"></div>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr>
+        <th style="width:13%">Name</th><th style="width:14%">Phone</th>
+        <th style="width:23%">Services</th><th style="width:15%">Appointment</th>
+        <th style="width:10%">Price(RM)</th><th style="width:9%">Status</th><th style="width:16%">Notes</th>
+      </tr></thead>
+      <tbody id="s2-body"></tbody>
+    </table>
+    <div id="s2-empty" class="empty" style="display:none">No records match the filters.</div>
+  </div>
+</div>
+
+<!-- ADD/EDIT MODAL -->
+<div class="overlay" id="form-overlay">
+<div class="modal">
+  <h2 id="form-title">Add customer record</h2>
+  <div class="two">
+    <div class="frow">
+      <label>Customer name <span class="req">*</span></label>
+      <input type="text" id="in-name" placeholder="e.g. Sarah Lim">
+      <div class="err-msg" id="e-name">Please enter a name</div>
+    </div>
+    <div class="frow">
+      <label>Phone number <span class="req">*</span></label>
+      <input type="text" id="in-phone" placeholder="e.g. 012-3456789">
+      <div class="err-msg" id="e-phone">Please enter a phone number</div>
+    </div>
+  </div>
+  <div class="frow">
+    <div class="svc-section-head">
+      <label style="margin:0">Services <span class="req">*</span> <span class="hint">(add one or more)</span></label>
+      <button class="btn-manage" onclick="openCatalog()"><i class="ti ti-settings" style="font-size:12px"></i>Manage catalog</button>
+    </div>
+    <div class="svc-add-grid">
+      <select id="svc-drop"><option value="">— Pick a service —</option></select>
+      <div class="rm-prefix"><input type="number" id="svc-price" placeholder="Price" min="0" step="0.5"></div>
+      <button class="btn-addsvc" onclick="addSvcToList()">+ Add</button>
+    </div>
+    <div class="err-msg" id="e-svc" style="margin-bottom:6px">Please add at least one service.</div>
+    <div class="svc-list" id="svc-list"><div class="svc-empty">No services added yet.</div></div>
+    <div class="svc-total-row" id="svc-total" style="display:none"><span>Total</span><strong id="svc-total-val">RM 0.00</strong></div>
+  </div>
+  <div class="two">
+    <div class="frow">
+      <label>Appointment date & time <span class="req">*</span></label>
+      <input type="datetime-local" id="in-dt" oninput="checkConflict()">
+      <div class="err-msg" id="e-dt">Please select a date and time</div>
+      <div class="warn-box" id="warn-dt"></div>
+    </div>
+    <div class="frow">
+      <label>Total price (RM)</label>
+      <div class="rm-prefix"><input type="number" id="in-price" placeholder="Auto-calculated" min="0" step="0.5"></div>
+      <div style="font-size:11px;color:#aaa;margin-top:3px">Auto-filled from services. You may override.</div>
+    </div>
+  </div>
+  <div class="frow">
+    <label>Notes <span class="hint">(optional)</span></label>
+    <textarea id="in-note" placeholder="e.g. sensitive skin, allergy history…"></textarea>
+  </div>
+  <div class="mfooter">
+    <button class="btn-sec" onclick="closeForm()">Cancel</button>
+    <button class="btn-prim" id="save-btn" onclick="saveRecord()">Save record</button>
+  </div>
+</div>
+</div>
+
+<!-- CATALOG MODAL -->
+<div class="overlay" id="cat-overlay">
+<div class="modal cat-modal">
+  <h2><i class="ti ti-list" style="margin-right:6px;font-size:16px;vertical-align:-2px"></i>Service Catalog</h2>
+  <p style="font-size:13px;color:#888;margin-bottom:12px">Manage your services and default prices.</p>
+  <div class="cat-list" id="cat-list"><div class="svc-empty">No services yet.</div></div>
+  <div style="font-size:13px;font-weight:500;margin-bottom:7px">Add new service</div>
+  <div class="cat-add">
+    <input type="text" id="cat-name" placeholder="Service name">
+    <input type="number" id="cat-price" placeholder="RM" min="0" step="0.5">
+    <button onclick="addCatalog()">+ Add</button>
+  </div>
+  <div class="err-msg" id="e-cat" style="margin-top:6px">Please enter a name and price.</div>
+  <div class="mfooter"><button class="btn-prim" onclick="closeCatalog()">Done</button></div>
+</div>
+</div>
+
+<script>
+// ── CONFIG — replace with your Railway backend URL after deploy ────
+var API = 'https://beauty-salon-production-cdc1.up.railway.app';
+// During local dev use: var API = 'http://localhost:4000';
+// ─────────────────────────────────────────────────────────────────
+
+var records = [];
+var catalog = []; // [{_id, name, price}]
+var editId  = null;
+var selSvcs = []; // [{name, price}]
+var tBlocked = false;
+var saving  = false;
+
+// ── Helpers ───────────────────────────────────────────────────────
+function pad(n){ return String(n).padStart(2,'0'); }
+function fmtDt(s){
+  if(!s) return '';
+  var d = new Date(s);
+  return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())+' '+pad(d.getHours())+':'+pad(d.getMinutes());
+}
+function initials(n){ var p=n.trim().split(' '); return (p.length>=2?p[0][0]+p[1][0]:n.slice(0,2)).toUpperCase(); }
+var AV=[{bg:'#E1F5EE',c:'#085041'},{bg:'#E6F1FB',c:'#0C447C'},{bg:'#EEEDFE',c:'#3C3489'},{bg:'#FBEAF0',c:'#72243E'},{bg:'#FAEEDA',c:'#633806'},{bg:'#EAF3DE',c:'#27500A'}];
+function avColor(n){ var h=0; for(var i=0;i<n.length;i++) h=(h*31+n.charCodeAt(i))%AV.length; return AV[h]; }
+function pillHtml(s){
+  if(s==='done')      return '<span class="pill pill-done"><i class="ti ti-check" style="font-size:10px"></i> Completed</span>';
+  if(s==='cancelled') return '<span class="pill pill-cancelled"><i class="ti ti-x" style="font-size:10px"></i> Cancelled</span>';
+  return '<span class="pill pill-pending"><i class="ti ti-clock" style="font-size:10px"></i> Pending</span>';
+}
+function s2pill(s){
+  if(s==='done')      return '<span class="s2pill s2-done"><i class="ti ti-check" style="font-size:10px"></i> Completed</span>';
+  if(s==='cancelled') return '<span class="s2pill s2-cancel"><i class="ti ti-x" style="font-size:10px"></i> Cancelled</span>';
+  return '<span class="s2pill s2-pending">Pending</span>';
+}
+
+// toast
+var toastTimer;
+function showToast(msg, isErr){
+  var t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show' + (isErr?' err':'');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(function(){ t.className='toast'; }, 3000);
+}
+
+// loading bar
+function lbSet(pct){ document.getElementById('lbar').style.width = pct+'%'; }
+function lbDone(){ lbSet(100); setTimeout(function(){ lbSet(0); },400); }
+
+// ── API calls ─────────────────────────────────────────────────────
+async function apiFetch(path, opts){
+  try {
+    var res = await fetch(API + path, opts);
+    if(!res.ok){ var e=await res.json(); throw new Error(e.error||'Request failed'); }
+    return res.json();
+  } catch(e) { showToast(e.message, true); throw e; }
+}
+
+// ── Load data ─────────────────────────────────────────────────────
+async function loadAll(){
+  lbSet(30);
+  try {
+    var results = await Promise.all([
+      apiFetch('/api/appointments'),
+      apiFetch('/api/catalog')
+    ]);
+    records = results[0];
+    catalog = results[1];
+    lbDone();
+    refreshAll();
+  } catch(e){ lbDone(); }
+}
+
+// ── Catalog ───────────────────────────────────────────────────────
+function openCatalog(){ renderCatList(); document.getElementById('cat-overlay').classList.add('show'); }
+function closeCatalog(){ document.getElementById('cat-overlay').classList.remove('show'); rebuildDrop(); }
+
+function renderCatList(){
+  var el = document.getElementById('cat-list');
+  if(!catalog.length){ el.innerHTML='<div class="svc-empty">No services yet. Add one below.</div>'; return; }
+  el.innerHTML = catalog.map(function(c){
+    return '<div class="cat-row" id="cat-'+c._id+'">'+
+      '<span class="cat-row-name">'+c.name+'</span>'+
+      '<input class="cat-price-inp" type="number" value="'+c.price+'" min="0" step="0.5" onchange="updateCatalogPrice(\''+c._id+'\',this.value)">'+
+      '<button class="cat-del" onclick="delCatalog(\''+c._id+'\')"><i class="ti ti-trash"></i></button>'+
+    '</div>';
+  }).join('');
+}
+
+async function addCatalog(){
+  var name  = document.getElementById('cat-name').value.trim();
+  var price = parseFloat(document.getElementById('cat-price').value);
+  var err   = document.getElementById('e-cat');
+  if(!name || isNaN(price) || price<0){ err.style.display='block'; return; }
+  err.style.display='none';
+  try {
+    var created = await apiFetch('/api/catalog', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name,price})});
+    catalog.push(created);
+    document.getElementById('cat-name').value='';
+    document.getElementById('cat-price').value='';
+    renderCatList();
+    showToast('Service added');
+  } catch(e){}
+}
+
+async function updateCatalogPrice(id, val){
+  var price = parseFloat(val);
+  if(isNaN(price)||price<0) return;
+  try {
+    await apiFetch('/api/catalog/'+id, {method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({price})});
+    var c = catalog.find(function(x){ return x._id===id; });
+    if(c) c.price=price;
+  } catch(e){}
+}
+
+async function delCatalog(id){
+  try {
+    await apiFetch('/api/catalog/'+id, {method:'DELETE'});
+    catalog = catalog.filter(function(c){ return c._id!==id; });
+    selSvcs = selSvcs.filter(function(s){ return catalog.find(function(c){ return c.name===s.name; }); });
+    renderCatList(); renderSvcList(); showToast('Service removed');
+  } catch(e){}
+}
+
+// ── Service dropdown ──────────────────────────────────────────────
+function rebuildDrop(){
+  var used = selSvcs.map(function(s){ return s.name; });
+  var opts = '<option value="">— Pick a service —</option>';
+  catalog.forEach(function(c){
+    if(used.indexOf(c.name)===-1)
+      opts += '<option value="'+c.name+'">'+c.name+' (RM '+Number(c.price).toFixed(2)+')</option>';
+  });
+  document.getElementById('svc-drop').innerHTML = opts;
+  document.getElementById('svc-price').value = '';
+}
+
+document.getElementById('svc-drop').addEventListener('change', function(){
+  var name = this.value;
+  var cat  = catalog.find(function(c){ return c.name===name; });
+  document.getElementById('svc-price').value = cat ? Number(cat.price).toFixed(2) : '';
+});
+
+function addSvcToList(){
+  var name  = document.getElementById('svc-drop').value;
+  var price = parseFloat(document.getElementById('svc-price').value);
+  var err   = document.getElementById('e-svc');
+  if(!name || isNaN(price) || price<0){ err.style.display='block'; return; }
+  err.style.display='none';
+  if(selSvcs.find(function(s){ return s.name===name; })) return;
+  selSvcs.push({name:name, price:price});
+  renderSvcList(); rebuildDrop(); syncTotalPrice();
+}
+
+function removeSvc(name){
+  selSvcs = selSvcs.filter(function(s){ return s.name!==name; });
+  renderSvcList(); rebuildDrop(); syncTotalPrice();
+}
+
+function renderSvcList(){
+  var el  = document.getElementById('svc-list');
+  var tot = document.getElementById('svc-total');
+  if(!selSvcs.length){ el.innerHTML='<div class="svc-empty">No services added yet.</div>'; tot.style.display='none'; return; }
+  el.innerHTML = selSvcs.map(function(s){
+    return '<div class="svc-item">'+
+      '<span class="svc-item-name">'+s.name+'</span>'+
+      '<span class="svc-item-price">RM '+s.price.toFixed(2)+'</span>'+
+      '<button class="svc-item-del" onclick="removeSvc(\''+s.name+'\')"><i class="ti ti-x" style="font-size:12px"></i></button>'+
+    '</div>';
+  }).join('');
+  var total = selSvcs.reduce(function(a,s){ return a+s.price; },0);
+  document.getElementById('svc-total-val').textContent='RM '+total.toFixed(2);
+  tot.style.display='flex';
+}
+
+function syncTotalPrice(){
+  var total = selSvcs.reduce(function(a,s){ return a+s.price; },0);
+  document.getElementById('in-price').value = total>0 ? total.toFixed(2) : '';
+}
+
+// ── Time conflict ──────────────────────────────────────────────────
+function checkConflict(){
+  var val  = document.getElementById('in-dt').value;
+  var warn = document.getElementById('warn-dt');
+  tBlocked = false;
+  if(!val){ warn.style.display='none'; return; }
+  var t = new Date(val).getTime();
+  var conflict = records.find(function(r){
+    return r._id!==editId && Math.abs(t - new Date(r.datetime).getTime()) < 3600000;
+  });
+  if(conflict){
+    warn.textContent='⚠️ Within 1 hour of '+conflict.name+' ('+fmtDt(conflict.datetime)+')';
+    warn.style.display='block'; tBlocked=true;
+  } else { warn.style.display='none'; }
+}
+
+// ── Form ──────────────────────────────────────────────────────────
+function openForm(id){
+  editId=id; selSvcs=[]; tBlocked=false;
+  var r = id ? records.find(function(x){ return x._id===id; }) : null;
+  document.getElementById('form-title').textContent = id ? 'Edit customer record' : 'Add customer record';
+  document.getElementById('in-name').value  = r ? r.name  : '';
+  document.getElementById('in-phone').value = r ? r.phone : '';
+  document.getElementById('in-dt').value    = r ? r.datetime : '';
+  document.getElementById('in-price').value = r ? r.price : '';
+  document.getElementById('in-note').value  = r ? (r.note||'') : '';
+  ['e-name','e-phone','e-svc','e-dt'].forEach(function(id){ document.getElementById(id).style.display='none'; });
+  document.getElementById('warn-dt').style.display='none';
+  if(r && r.services){
+    selSvcs = r.services.map(function(name){
+      var sp = r.servicePrices && r.servicePrices[name];
+      var cat = catalog.find(function(c){ return c.name===name; });
+      return {name:name, price: sp!=null ? sp : (cat ? cat.price : 0)};
+    });
+  }
+  rebuildDrop(); renderSvcList();
+  if(id) checkConflict();
+  document.getElementById('form-overlay').classList.add('show');
+}
+function closeForm(){ document.getElementById('form-overlay').classList.remove('show'); }
+
+async function saveRecord(){
+  if(saving) return;
+  if(tBlocked){ document.getElementById('warn-dt').style.display='block'; return; }
+  var name  = document.getElementById('in-name').value.trim();
+  var phone = document.getElementById('in-phone').value.trim();
+  var dt    = document.getElementById('in-dt').value;
+  var price = document.getElementById('in-price').value;
+  var note  = document.getElementById('in-note').value.trim();
+  var ok=true;
+  if(!name){ document.getElementById('e-name').style.display='block'; ok=false; } else { document.getElementById('e-name').style.display='none'; }
+  if(!phone){ document.getElementById('e-phone').style.display='block'; ok=false; } else { document.getElementById('e-phone').style.display='none'; }
+  if(!selSvcs.length){ document.getElementById('e-svc').style.display='block'; ok=false; } else { document.getElementById('e-svc').style.display='none'; }
+  if(!dt){ document.getElementById('e-dt').style.display='block'; ok=false; } else { document.getElementById('e-dt').style.display='none'; }
+  if(!ok) return;
+  var finalPrice = price ? parseFloat(price) : selSvcs.reduce(function(a,s){ return a+s.price; },0);
+  var sp={};
+  selSvcs.forEach(function(s){ sp[s.name]=s.price; });
+  var body = {name,phone,services:selSvcs.map(function(s){ return s.name; }),servicePrices:sp,datetime:dt,price:finalPrice,note};
+  saving=true;
+  document.getElementById('save-btn').textContent='Saving…';
+  try {
+    if(editId){
+      var updated = await apiFetch('/api/appointments/'+editId, {method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+      var idx = records.findIndex(function(x){ return x._id===editId; });
+      if(idx>=0) records[idx]=updated;
+    } else {
+      var created = await apiFetch('/api/appointments', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+      records.unshift(created);
+    }
+    closeForm(); refreshAll(); showToast(editId?'Record updated':'Record saved ✓');
+  } catch(e){}
+  saving=false;
+  document.getElementById('save-btn').textContent='Save record';
+}
+
+// ── Status ────────────────────────────────────────────────────────
+async function setStatus(id, status){
+  try {
+    var updated = await apiFetch('/api/appointments/'+id, {method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify({status})});
+    var idx = records.findIndex(function(x){ return x._id===id; });
+    if(idx>=0) records[idx]=updated;
+    refreshAll(); showToast('Status updated');
+  } catch(e){}
+}
+
+// ── Render S1 ─────────────────────────────────────────────────────
+function renderS1(){
+  var q = document.getElementById('s1-search').value.toLowerCase();
+  var list = records.filter(function(r){ return r.name.toLowerCase().indexOf(q)>=0||r.phone.indexOf(q)>=0; });
+  var grid = document.getElementById('card-grid');
+  document.getElementById('s1-empty').style.display = list.length ? 'none' : 'block';
+  if(!list.length){ grid.innerHTML=''; return; }
+  grid.innerHTML = list.map(function(r){
+    var av = avColor(r.name);
+    var dClass = r.status==='done' ? 'act is-done' : 'act adone';
+    var cClass = r.status==='cancelled' ? 'act is-cancel' : 'act acancel';
+    var dClick = r.status==='done' ? "setStatus('"+r._id+"','pending')" : "setStatus('"+r._id+"','done')";
+    var cClick = r.status==='cancelled' ? "setStatus('"+r._id+"','pending')" : "setStatus('"+r._id+"','cancelled')";
+    var svcsHtml = r.services.map(function(s){ return '<span class="badge">'+s+'</span>'; }).join('');
+    return '<div class="card '+r.status+'">'+
+      '<div class="card-top">'+
+        '<div class="card-id">'+
+          '<div class="avatar" style="background:'+av.bg+';color:'+av.c+'">'+initials(r.name)+'</div>'+
+          '<div><div class="card-name">'+r.name+'</div>'+
+          '<div class="card-phone"><i class="ti ti-phone" style="font-size:11px;margin-right:3px;vertical-align:-1px"></i>'+r.phone+'</div></div>'+
+        '</div>'+pillHtml(r.status)+
+      '</div>'+
+      '<div class="badges">'+svcsHtml+'</div>'+
+      '<div class="card-meta">'+
+        '<div><div class="meta-lbl"><i class="ti ti-calendar" style="font-size:11px;margin-right:2px;vertical-align:-1px"></i>Appointment</div><div class="meta-val">'+fmtDt(r.datetime)+'</div></div>'+
+        '<div><div class="meta-lbl"><i class="ti ti-currency-dollar" style="font-size:11px;margin-right:2px;vertical-align:-1px"></i>Price</div><div class="meta-val meta-price">RM '+Number(r.price).toFixed(2)+'</div></div>'+
+      '</div>'+
+      (r.note ? '<div class="card-note"><i class="ti ti-notes" style="font-size:11px;margin-right:3px;vertical-align:-1px"></i>'+r.note+'</div>' : '')+
+      '<div class="card-actions">'+
+        '<button class="'+dClass+'" onclick="'+dClick+'"><i class="ti ti-check" style="font-size:12px"></i> Done</button>'+
+        '<button class="'+cClass+'" onclick="'+cClick+'"><i class="ti ti-x" style="font-size:12px"></i> Cancel</button>'+
+        '<button class="act" onclick="openForm(\''+r._id+'\')"><i class="ti ti-edit" style="font-size:12px"></i> Edit</button>'+
+        '<button class="act" onclick="openForm(null)"><i class="ti ti-plus" style="font-size:12px"></i> New</button>'+
+      '</div>'+
+    '</div>';
+  }).join('');
+}
+
+// ── Render S2 ─────────────────────────────────────────────────────
+function buildFilters(){
+  var phones=[], svcs=[];
+  records.forEach(function(r){
+    var key=r.phone+'||'+r.name;
+    if(phones.indexOf(key)===-1) phones.push(key);
+    r.services.forEach(function(s){ if(svcs.indexOf(s)===-1) svcs.push(s); });
+  });
+  phones.sort(); svcs.sort();
+  var pEl=document.getElementById('f-ph'), pv=pEl.value;
+  pEl.innerHTML='<option value="">All customers</option>'+phones.map(function(v){ var p=v.split('||'); return '<option value="'+p[0]+'">'+p[1]+' ('+p[0]+')</option>'; }).join('');
+  if(pv) pEl.value=pv;
+  var sEl=document.getElementById('f-sv'), sv=sEl.value;
+  sEl.innerHTML='<option value="">All services</option>'+svcs.map(function(s){ return '<option value="'+s+'">'+s+'</option>'; }).join('');
+  if(sv) sEl.value=sv;
+}
+
+function renderS2(){
+  var q  = document.getElementById('f-q').value.toLowerCase();
+  var ph = document.getElementById('f-ph').value;
+  var sv = document.getElementById('f-sv').value;
+  var st = document.getElementById('f-st').value;
+  var fr = document.getElementById('f-from').value;
+  var to = document.getElementById('f-to').value;
+  var list = [].concat(records).sort(function(a,b){ return new Date(b.datetime)-new Date(a.datetime); });
+  if(q)  list=list.filter(function(r){ return r.name.toLowerCase().indexOf(q)>=0||(r.note&&r.note.toLowerCase().indexOf(q)>=0); });
+  if(ph) list=list.filter(function(r){ return r.phone===ph; });
+  if(sv) list=list.filter(function(r){ return r.services.indexOf(sv)>=0; });
+  if(st) list=list.filter(function(r){ return r.status===st; });
+  if(fr) list=list.filter(function(r){ return new Date(r.datetime)>=new Date(fr); });
+  if(to) list=list.filter(function(r){ return new Date(r.datetime)<=new Date(to); });
+  var hasF=q||ph||sv||st||fr||to;
+  var total=list.reduce(function(a,r){ return a+Number(r.price); },0);
+  document.getElementById('fcount').innerHTML=(hasF?'Found':'Showing')+' <strong>'+list.length+'</strong> record'+(list.length!==1?'s':'')+' — total <strong>RM '+total.toFixed(2)+'</strong>';
+  document.getElementById('s2-empty').style.display=list.length?'none':'block';
+  document.getElementById('s2-body').innerHTML=list.map(function(r){
+    return '<tr>'+
+      '<td><strong>'+r.name+'</strong></td>'+
+      '<td style="font-size:12px">'+r.phone+'</td>'+
+      '<td class="td-svc">'+r.services.map(function(s){ return '<span class="badge">'+s+'</span>'; }).join('')+'</td>'+
+      '<td style="font-size:11px;color:#888">'+fmtDt(r.datetime)+'</td>'+
+      '<td style="font-weight:500;color:#0F6E56">RM '+Number(r.price).toFixed(2)+'</td>'+
+      '<td>'+s2pill(r.status)+'</td>'+
+      '<td style="font-size:12px;color:#888" title="'+(r.note||'')+'">'+(r.note||'—')+'</td>'+
+    '</tr>';
+  }).join('');
+}
+
+function clearF(){
+  ['f-q','f-from','f-to'].forEach(function(id){ document.getElementById(id).value=''; });
+  ['f-ph','f-sv','f-st'].forEach(function(id){ document.getElementById(id).value=''; });
+  renderS2();
+}
+
+function updateStats(){
+  document.getElementById('st-cust').textContent=new Set(records.map(function(r){ return r.phone; })).size;
+  var now=new Date(), y=now.getFullYear(), m=now.getMonth();
+  document.getElementById('st-month').textContent=records.filter(function(r){ var d=new Date(r.datetime); return d.getFullYear()===y&&d.getMonth()===m; }).length;
+  document.getElementById('st-done').textContent=records.filter(function(r){ return r.status==='done'; }).length;
+  document.getElementById('st-rev').textContent=records.filter(function(r){ return r.status==='done'; }).reduce(function(a,r){ return a+Number(r.price); },0).toFixed(0);
+}
+
+function refreshAll(){ renderS1(); buildFilters(); renderS2(); updateStats(); }
+
+// close on overlay click
+document.getElementById('form-overlay').addEventListener('click',function(e){ if(e.target===this) closeForm(); });
+document.getElementById('cat-overlay').addEventListener('click',function(e){ if(e.target===this) closeCatalog(); });
+
+// ── Boot ──────────────────────────────────────────────────────────
+loadAll();
+</script>
+</body>
+</html>
