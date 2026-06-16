@@ -32,8 +32,15 @@ const catalogSchema = new mongoose.Schema({
   price: { type: Number, required: true, min: 0 }
 });
 
+const customerSchema = new mongoose.Schema({
+  name:   { type: String, required: true, trim: true },
+  phone:  { type: String, required: true, trim: true, unique: true },
+  remark: { type: String, default: '' }
+}, { timestamps: true });
+
 const Appointment = mongoose.model('Appointment', appointmentSchema);
 const Catalog     = mongoose.model('Catalog', catalogSchema);
+const Customer    = mongoose.model('Customer', customerSchema);
 
 // ── Appointments CRUD ─────────────────────────────────────────────
 app.get('/api/appointments', async (req, res) => {
@@ -84,6 +91,32 @@ app.put('/api/catalog/:id', async (req, res) => {
 app.delete('/api/catalog/:id', async (req, res) => {
   try {
     await Catalog.findByIdAndDelete(req.params.id);
+    res.json({ ok: true });
+  } catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+// ── Customers CRUD ────────────────────────────────────────────────
+app.get('/api/customers', async (req, res) => {
+  try { res.json(await Customer.find().sort({ name: 1 })); }
+  catch (e) { res.status(500).json({ error: e.message }); }
+});
+
+app.post('/api/customers', async (req, res) => {
+  try { res.status(201).json(await new Customer(req.body).save()); }
+  catch (e) { res.status(400).json({ error: e.message }); }
+});
+
+app.put('/api/customers/:id', async (req, res) => {
+  try {
+    const doc = await Customer.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
+    if (!doc) return res.status(404).json({ error: 'Not found' });
+    res.json(doc);
+  } catch (e) { res.status(400).json({ error: e.message }); }
+});
+
+app.delete('/api/customers/:id', async (req, res) => {
+  try {
+    await Customer.findByIdAndDelete(req.params.id);
     res.json({ ok: true });
   } catch (e) { res.status(500).json({ error: e.message }); }
 });
